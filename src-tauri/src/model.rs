@@ -1,0 +1,10 @@
+pub mod patient;
+pub mod doctor;
+pub mod speciality;
+pub mod diagnosis;
+pub mod cabinet;
+pub mod medicine;
+pub mod appointment;
+// connections m:m
+pub mod appointment_medicine;
+pub mod appointment_diagnosis;
