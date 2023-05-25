@@ -138,3 +138,39 @@ pub async fn find_patients_by_full_name(
     ).fetch_all(pool).await?;
     Ok(patients_entitys.into_iter().map(Patient::from).collect())
 }
+
+pub async fn get_patient_by_insurance_number(
+    pool: &PgPool,
+    insurance_number: &str,
+) -> Result<Patient, sqlx::Error> {
+    let patient_entity = sqlx::query_as!(
+        PatientEntity,
+        r#"
+        SELECT t.*
+        FROM patient t
+        WHERE t.insurance_number = $1
+        "#,
+        insurance_number
+    )
+    .fetch_one(pool)
+    .await?;
+    Ok(Patient::from(patient_entity))
+}
+
+pub async fn get_patient_by_snils_number(
+    pool: &PgPool,
+    snils_number: &str,
+) -> Result<Patient, sqlx::Error> {
+    let patient_entity = sqlx::query_as!(
+        PatientEntity,
+        r#"
+        SELECT t.*
+        FROM patient t
+        WHERE t.snils_number = $1
+        "#,
+        snils_number
+    )
+    .fetch_one(pool)
+    .await?;
+    Ok(Patient::from(patient_entity))
+}
