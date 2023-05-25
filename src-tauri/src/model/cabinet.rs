@@ -4,38 +4,38 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize, Getters, Setters)]
 #[getset(get = "pub", set = "pub")]
 pub struct Cabinet {
-    number: i64,
-    id_doctor: Option<i64>,
+    cabinet_number: i32,
+    working_doctor_id: Option<i32>,
     phone: String,
-    work_time: String,
+    working_hours: String,
 }
 
 impl Cabinet {
-    pub fn new(number: i64, id_doctor: Option<i64>, phone: String, work_time: String) -> Self {
+    pub fn new(cabinet_number: i32, id_doctor: Option<i32>, phone: String, working_hours: String) -> Self {
         Self {
-            number,
-            id_doctor,
+            cabinet_number,
+            working_doctor_id: id_doctor,
             phone,
-            work_time,
+            working_hours,
         }
     }
 }
 
 #[derive(Debug, Clone, Serialize)]
 pub struct CabinetEntity {
-    pub number: i64,
-    pub id_doctor: Option<i64>,
+    pub cabinet_number: i32,
+    pub working_doctor_id: Option<i32>,
     pub phone: String,
-    pub work_time: String,
+    pub working_hours: String,
 }
 
 impl From<CabinetEntity> for Cabinet {
     fn from(user_entity: CabinetEntity) -> Self {
         Cabinet {
-            number: user_entity.number,
-            id_doctor: user_entity.id_doctor,
+            cabinet_number: user_entity.cabinet_number,
+            working_doctor_id: user_entity.working_doctor_id,
             phone: user_entity.phone,
-            work_time: user_entity.work_time,
+            working_hours: user_entity.working_hours,
         }
     }
 }

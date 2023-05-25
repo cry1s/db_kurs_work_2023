@@ -4,16 +4,16 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize, Getters, Setters)]
 #[getset(get = "pub", set = "pub")]
 pub struct Diagnosis {
-    id: Option<i64>, // None if created manually, Some(id) if retrieved from db
-    name: String,
+    diagnosis_id: Option<i32>, // None if created manually, Some(id) if retrieved from db
+    disease_name: String,
     hospitalization: bool,
 }
 
 impl Diagnosis {
-    pub fn new(name: String, hospitalization: bool) -> Self {
+    pub fn new(disease_name: String, hospitalization: bool) -> Self {
         Self {
-            id: None,
-            name,
+            diagnosis_id: None,
+            disease_name,
             hospitalization,
         }
     }
@@ -21,16 +21,16 @@ impl Diagnosis {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct DiagnosisEntity {
-    pub id: i64,
-    pub name: String,
+    pub diagnosis_id: i32,
+    pub disease_name: String,
     pub hospitalization: bool,
 }
 
 impl From<DiagnosisEntity> for Diagnosis {
     fn from(user_entity: DiagnosisEntity) -> Self {
         Diagnosis {
-            id: Some(user_entity.id),
-            name: user_entity.name,
+            diagnosis_id: Some(user_entity.diagnosis_id),
+            disease_name: user_entity.disease_name,
             hospitalization: user_entity.hospitalization,
         }
     }

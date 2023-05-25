@@ -3,7 +3,7 @@ pub mod doctor;
 pub mod speciality;
 pub mod diagnosis;
 pub mod cabinet;
-pub mod medicine;
+pub mod medication;
 pub mod appointment;
 // connections m:m
 pub mod appointment_medicine;
