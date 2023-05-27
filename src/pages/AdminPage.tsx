@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import './AdminPage.css';
 import { Appointment, Cabinet, Diagnosis, Doctor, Medication, Patient, Specialty } from '../models';
-import { invoke } from '@tauri-apps/api';
+import { app, invoke } from '@tauri-apps/api';
 
 type SomeThing = Appointment | Cabinet | Diagnosis | Doctor | Medication | Patient | Specialty | object;
 // Страница администратора, на которой отображаются таблицы БД:
@@ -62,11 +62,16 @@ const AdminPage = () => {
   }, [selectedTable]);
 
   const handleTableSelect = (table: string) => {
+    setFormData({});
     setSelectedTable(table);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    const { name } = e.target;
+    let  { value } = e.target;
+    if (name === 'hospitalization') {
+      value = e.target.checked ? 'true' : '';
+    }
     setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
   };
 
@@ -86,11 +91,102 @@ const AdminPage = () => {
   // Функция для добавления строки в таблицу
   const handleRowAdd = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    // Ваша логика для добавления строки в таблицу
-    // Используйте данные из formData
-
-    // Очистка данных формы после добавления
+    console.log(formData);
+    switch (selectedTable) {
+      case 'appointments':
+        const appointment = formData as Appointment;
+        appointment.appointment_id = null;
+        appointment.doctor_id = Number(appointment.doctor_id);
+        appointment.patient_outpatient_card_number = Number(appointment.patient_outpatient_card_number);
+        // all fields must be except id
+        if (!appointment.appointment_time || !appointment.complaints || !appointment.doctor_id || !appointment.patient_outpatient_card_number) {
+          return;
+        }
+        invoke('add_table_row' , {tableName: selectedTable, row: appointment}).then((result: any) => {
+          console.log(result);
+        }).catch((error: any) => {
+          console.error(error);
+        });
+        break;
+      case 'cabinets':
+        const cabinet = formData as Cabinet;
+        // parse all fields to their types
+        cabinet.working_doctor_id = Number(cabinet.working_doctor_id);
+        if (!cabinet.cabinet_number || !cabinet.phone || !cabinet.working_hours) {
+          return;
+        }
+        invoke('add_table_row' , {tableName: selectedTable, row: cabinet}).then((result: any) => {
+          console.log(result);
+        }).catch((error: any) => {
+          console.error(error);
+        });
+        break;
+      case 'diagnoses':
+        const diagnosis = formData as Diagnosis;
+        // parse all fields to their types
+        diagnosis.diagnosis_id = null;
+        diagnosis.hospitalization = Boolean(diagnosis.hospitalization);
+        invoke('add_table_row' , {tableName: selectedTable, row: diagnosis}).then((result: any) => {
+          console.log(result);
+        }).catch((error: any) => {
+          console.error(error);
+        });
+        break;
+      case 'doctors':
+        const doctor = formData as Doctor;
+        // parse all fields to their types
+        doctor.doctor_id = null;
+        doctor.specialty_id = Number(doctor.specialty_id);
+        if (!doctor.full_name || !doctor.qualification || !doctor.specialty_id) {
+          return;
+        }
+        invoke('add_table_row' , {tableName: selectedTable, row: doctor}).then((result: any) => {
+          console.log(result);
+        }).catch((error: any) => {
+          console.error(error);
+        });
+        break;
+      case 'medications':
+        const medication = formData as Medication;
+        // parse all fields to their types
+        medication.medication_id = null;
+        if (!medication.dosage || !medication.treatment_plan || !medication.name) {
+          return;
+        }
+        invoke('add_table_row' , {tableName: selectedTable, row: medication}).then((result: any) => {
+          console.log(result);
+        }).catch((error: any) => {
+          console.error(error);
+        });
+        break;
+      case 'patients':
+        const patient = formData as Patient;
+        // parse all fields to their types
+        patient.outpatient_card_number = null;
+        if (!patient.address || !patient.contacts || !patient.date_of_birth || !patient.full_name || !patient.gender || !patient.insurance_number || !patient.snils_number) {
+          return;
+        }
+        invoke('add_table_row' , {tableName: selectedTable, row: patient}).then((result: any) => {
+          console.log(result);
+        }).catch((error: any) => {
+          console.error(error);
+        });
+        break;
+      case 'specialties':
+        const specialty = formData as Specialty;
+        // parse all fields to their types
+        if (!specialty.education_duration || !specialty.name) {
+          return;
+        }
+        invoke('add_table_row' , {tableName: selectedTable, row: specialty}).then((result: any) => {
+          console.log(result);
+        }).catch((error: any) => {
+          console.error(error);
+        });
+        break;
+      default:
+        break;
+    }
     setFormData({});
   };
 
@@ -103,6 +199,10 @@ const AdminPage = () => {
         appointment.appointment_id = Number(appointment.appointment_id);
         appointment.doctor_id = Number(appointment.doctor_id);
         appointment.patient_outpatient_card_number = Number(appointment.patient_outpatient_card_number);
+        // all fields except id are required
+        if (!appointment.doctor_id || !appointment.patient_outpatient_card_number || !appointment.complaints || !appointment.appointment_time) {
+          return;
+        }
         invoke('update_table_row' , {tableName: selectedTable, row: appointment}).then((result: any) => {
           console.log(result);
         }).catch((error: any) => {
@@ -111,11 +211,13 @@ const AdminPage = () => {
         break;
       case 'cabinets':
         const cabinet = formData as Cabinet;
-        cabinet.cabinet_number = (rowData as Cabinet).cabinet_number;
+        cabinet.cabinet_number = Number((rowData as Cabinet).cabinet_number);
         // parse all fields to their types
         cabinet.cabinet_number = Number(cabinet.cabinet_number);
         cabinet.working_doctor_id = Number(cabinet.working_doctor_id);
-
+        if (!cabinet.cabinet_number || !cabinet.phone || !cabinet.working_hours) {
+          return;
+        }
         invoke('update_table_row' , {tableName: selectedTable, row: cabinet}).then((result: any) => {
           console.log(result);
         }
@@ -129,7 +231,11 @@ const AdminPage = () => {
         diagnosis.diagnosis_id = (rowData as Diagnosis).diagnosis_id;
         // parse all fields to their types
         diagnosis.diagnosis_id = Number(diagnosis.diagnosis_id);
-        diagnosis.hospitalization = Boolean(diagnosis.hospitalization);        
+        diagnosis.hospitalization = Boolean(diagnosis.hospitalization); 
+        // all fields except id are required
+        if (!diagnosis.disease_name) {
+          return;
+        }
         invoke('update_table_row' , {tableName: selectedTable, row: diagnosis}).then((result: any) => {
           console.log(result);
         }).catch((error: any) => {
@@ -143,6 +249,9 @@ const AdminPage = () => {
         doctor.specialty_id = Number(doctor.specialty_id);
         doctor.doctor_id = (rowData as Doctor).doctor_id;
         console.log(doctor);
+        if (!doctor.specialty_id || !doctor.full_name || !doctor.qualification) {
+          return;
+        }
         invoke('update_table_row' , {tableName: selectedTable, row: doctor}).then((result: any) => {
           console.log(result);
         }
@@ -156,6 +265,9 @@ const AdminPage = () => {
         medication.medication_id = (rowData as Medication).medication_id;
         // parse all fields to their types
         medication.medication_id = Number(medication.medication_id);
+        if (!medication.dosage || !medication.treatment_plan || !medication.name) {
+          return;
+        }
         invoke('update_table_row' , {tableName: selectedTable, row: medication}).then((result: any) => {
           console.log(result);
         }
@@ -169,6 +281,9 @@ const AdminPage = () => {
         patient.outpatient_card_number = (rowData as Patient).outpatient_card_number;
         // parse all fields to their types
         patient.outpatient_card_number = Number(patient.outpatient_card_number);
+        if (!patient.full_name || !patient.address || !patient.contacts || !patient.date_of_birth || !patient.gender || !patient.insurance_number || !patient.snils_number) {
+          return;
+        }
         invoke('update_table_row' , {tableName: selectedTable, row: patient}).then((result: any) => {
           console.log(result);
         }
@@ -182,6 +297,9 @@ const AdminPage = () => {
         specialty.specialty_id = (rowData as Specialty).specialty_id;
         specialty.specialty_id = Number(specialty.specialty_id);
         specialty.education_duration = Number(specialty.education_duration);
+        if (!specialty.name || !specialty.education_duration) {
+          return;
+        }
         invoke('update_table_row' , {tableName: selectedTable, row: specialty}).then((result: any) => {
           console.log(result);
         }
@@ -561,7 +679,7 @@ const AdminPage = () => {
         {/* Поля для ввода данных */}
         <input
           type="number"
-          value={(formData as Cabinet).cabinet_number || ''}
+          value={(formData as Cabinet).cabinet_number || 0}
           name="cabinet_number"
           placeholder="Номер кабинета"
           onChange={handleInputChange}
@@ -589,16 +707,9 @@ const AdminPage = () => {
       <form onSubmit={handleRowAdd}>
         {/* Поля для ввода данных */}
         <input
-          type="number"
-          value={(formData as Diagnosis).diagnosis_id || ''}
-          name="diagnosis_id"
-          placeholder="ID диагноза"
-          onChange={handleInputChange}
-        />
-        <input
           type="text"
           value={(formData as Diagnosis).disease_name || ''}
-          name="name"
+          name="disease_name"
           placeholder="Название"
           onChange={handleInputChange}
         />
@@ -619,13 +730,6 @@ const AdminPage = () => {
       <form onSubmit={handleRowAdd}>
         {/* Поля для ввода данных */}
         <input
-          type="number"
-          value={(formData as Doctor).doctor_id || ''}
-          name="doctor_id"
-          placeholder="ID врача"
-          onChange={handleInputChange}
-        />
-        <input
           type="text"
           value={(formData as Doctor).full_name || ''}
           name="full_name"
@@ -642,10 +746,11 @@ const AdminPage = () => {
         <input
           type="text"
           value={(formData as Doctor).qualification || ''}
-          name="cabinet_number"
-          placeholder="Номер кабинета"
+          name="qualification"
+          placeholder="Квалификация"
           onChange={handleInputChange}
         />
+        <button type="submit">Добавить</button>
         </form>
     </div>
       case 'medications':
@@ -653,13 +758,6 @@ const AdminPage = () => {
       {/* Форма для добавления строк */}
       <form onSubmit={handleRowAdd}>
         {/* Поля для ввода данных */}
-        <input
-          type="number"
-          value={(formData as Medication).medication_id || ''}
-          name="medication_id"
-          placeholder="ID лекарства"
-          onChange={handleInputChange}
-        />
         <input
           type="text"
           value={(formData as Medication).name || ''} 
@@ -697,7 +795,7 @@ const AdminPage = () => {
           onChange={handleInputChange}
         />
         <input
-          type='datetime-local'
+          type='date'
           value={(formData as Patient).date_of_birth || ''}
           name="date_of_birth"
           placeholder="Дата рождения"
@@ -720,7 +818,7 @@ const AdminPage = () => {
         <input
           type="text"
           value={(formData as Patient).insurance_number || ''}
-          name="insurance_policy_number"
+          name="insurance_number"
           placeholder="Номер страхового полиса"
           onChange={handleInputChange}
         />

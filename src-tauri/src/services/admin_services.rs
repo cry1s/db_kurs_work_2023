@@ -63,3 +63,23 @@ pub async fn delete_table_row(
     }.map_err(|e| format!("Error: {}", e))?;
     Ok(result)
 }
+
+#[tauri::command]
+pub async fn add_table_row(
+    table_name: String, // appointments, cabinets, diagnoses, medications, patients, specialties
+    row: serde_json::Value,
+    connection: State<'_, DbConnectionPool>,
+) -> Result<serde_json::Value, String> {
+    let pool = &*connection.connection.lock().await;
+    let result = match table_name.as_str() {
+        "appointments"  => appointment_controller::add_appointment(pool, serde_json::from_value(row).unwrap()).await.map(|appointment| serde_json::to_value(appointment).unwrap()),
+        "cabinets"      => cabinet_controller::add_cabinet(pool, serde_json::from_value(row).unwrap()).await.map(|cabinet| serde_json::to_value(cabinet).unwrap()),
+        "diagnoses"     => diagnosis_controller::add_diagnosis(pool, serde_json::from_value(row).unwrap()).await.map(|diagnosis| serde_json::to_value(diagnosis).unwrap()),
+        "medications"   => medication_controller::add_medication(pool, serde_json::from_value(row).unwrap()).await.map(|medication| serde_json::to_value(medication).unwrap()),
+        "patients"      => patient_controller::add_patient(pool, serde_json::from_value(row).unwrap()).await.map(|patient| serde_json::to_value(patient).unwrap()),
+        "specialties"   => speciality_controller::add_speciality(pool, serde_json::from_value(row).unwrap()).await.map(|specialty| serde_json::to_value(specialty).unwrap()),
+        "doctors"       => doctor_controller::add_doctor(pool, serde_json::from_value(row).unwrap()).await.map(|doctor| serde_json::to_value(doctor).unwrap()),
+        _ => Ok(serde_json::Value::Null),
+    }.map_err(|e| format!("Error: {}", e))?;
+    Ok(result)
+}

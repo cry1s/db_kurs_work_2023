@@ -16,7 +16,7 @@
 // --------------------------------------------------
 
 export interface Appointment {
-    appointment_id: number;
+    appointment_id: number | null;
     doctor_id: number;
     patient_outpatient_card_number: number;
     appointment_time: string;
@@ -37,7 +37,7 @@ export interface Appointment {
 // --------------------------------------------------
 
 export interface Cabinet {
-    working_doctor_id: number;
+    working_doctor_id: number | null;
     phone: string;
     working_hours: string;
     cabinet_number: number;
@@ -54,7 +54,7 @@ export interface Cabinet {
 // --------------------------------------------------
 
 export interface Diagnosis {
-    diagnosis_id: number;
+    diagnosis_id: number | null;
     disease_name: string;
     hospitalization: boolean;
 }
@@ -73,7 +73,7 @@ export interface Diagnosis {
 // --------------------------------------------------
 
 export interface Doctor {
-    doctor_id: number;
+    doctor_id: number | null;
     full_name: string;
     specialty_id: number;
     qualification: string;
@@ -92,7 +92,7 @@ export interface Doctor {
 // --------------------------------------------------
 
 export interface Medication {
-    medication_id: number;
+    medication_id: number | null;
     name: string;
     treatment_plan: string;
     dosage: string;
@@ -114,7 +114,7 @@ export interface Medication {
 // --------------------------------------------------
 
 export interface Patient {
-    outpatient_card_number: number;
+    outpatient_card_number: number | null;
     full_name: string;
     insurance_number: string;
     snils_number: string;
@@ -135,7 +135,7 @@ export interface Patient {
 // --------------------------------------------------
 
 export interface Specialty {
-    specialty_id: number;
+    specialty_id: number | null;
     name: string;
     education_duration: number;
 }

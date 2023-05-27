@@ -38,6 +38,7 @@ async fn main() {
             get_all_from_table,
             update_table_row,
             delete_table_row,
+            add_table_row,
         ])
         .setup(|app| {
             #[cfg(debug_assertions)]
