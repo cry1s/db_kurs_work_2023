@@ -5,6 +5,3 @@ pub mod diagnosis;
 pub mod cabinet;
 pub mod medication;
 pub mod appointment;
-// connections m:m
-pub mod appointment_medicine;
-pub mod appointment_diagnosis;

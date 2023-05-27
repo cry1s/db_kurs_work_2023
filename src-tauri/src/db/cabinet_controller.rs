@@ -138,4 +138,3 @@ pub async fn get_cabinet_by_appointment_id(
     .await?;
     Ok(Cabinet::from(cabinet_entity))
 }
-

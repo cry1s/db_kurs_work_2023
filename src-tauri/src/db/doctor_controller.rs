@@ -1,3 +1,4 @@
+use serde::{Serialize, Deserialize};
 use sqlx::PgPool;
 
 use crate::model::doctor::{Doctor, DoctorEntity};
@@ -135,4 +136,47 @@ pub async fn get_doctor_by_appointment_id(
     .fetch_one(pool)
     .await?;
     Ok(Doctor::from(doctor_entity))
+}
+
+pub async fn try_login_doctor(
+    pool: &PgPool,
+    doctor_id: i32,
+    password: i32,
+) -> Result<Doctor, sqlx::Error> {
+    let doctor_entity = sqlx::query_as!(
+        DoctorEntity,
+        r#"
+        SELECT t.*
+        FROM doctor t
+        WHERE t.doctor_id = $1 AND hash_numeric(t.doctor_id) = $2
+        "#,
+        doctor_id,
+        password
+    )
+    .fetch_one(pool)
+    .await?;
+    Ok(Doctor::from(doctor_entity))
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct DoctorEntityWithPassword {
+    doctor_id: i32,
+    full_name: String,
+    specialty_id: i32,
+    qualification: String,
+    password: Option<i32>,
+}
+
+pub(crate) async fn get_all_doctors_with_passwords(pool: &PgPool) -> Result<Vec<DoctorEntityWithPassword>, sqlx::Error> {
+    let doctors_entities = sqlx::query_as!(
+        DoctorEntityWithPassword,
+        r#"
+        SELECT t.*, hash_numeric(t.doctor_id) as password
+        FROM doctor t
+        ORDER BY t.full_name
+        "#
+    )
+    .fetch_all(pool)
+    .await?;
+    Ok(doctors_entities)
 }

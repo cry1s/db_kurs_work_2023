@@ -1,0 +1,11 @@
+.table-selection {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.add-edit-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}

@@ -6,8 +6,8 @@ pub struct DbConnectionPool {
 }
 
 pub async fn establish_connection_pool() -> Result<DbConnectionPool, String> {
-    let db_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let pool = PgPool::connect(&db_url)
+    let _db_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let pool = PgPool::connect("postgres://gofvuhxy:N0Kn9CqG1LeJCWDMfYdLFddTaNg_qGaY@trumpet.db.elephantsql.com/gofvuhxy")//&db_url)
         .await
         .map_err(|e| format!("Error connecting to db: {}", e))?;
 

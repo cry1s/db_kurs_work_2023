@@ -46,7 +46,7 @@ pub async fn get_patient_by_outpatient_card_number(
     Ok(Patient::from(patient_entity))
 }
 
-pub async fn get_patient_by_appointment_id (
+pub async fn get_patient_by_appointment_id(
     pool: &PgPool,
     appointment_id: i32,
 ) -> Result<Patient, sqlx::Error> {
@@ -65,10 +65,7 @@ pub async fn get_patient_by_appointment_id (
     Ok(Patient::from(patient_entity))
 }
 
-pub async fn add_patient(
-    pool: &PgPool,
-    patient: Patient,
-) -> Result<i32, sqlx::Error> {
+pub async fn add_patient(pool: &PgPool, patient: Patient) -> Result<i32, sqlx::Error> {
     let patient_entity = sqlx::query_as!(
         PatientEntity,
         r#"
@@ -87,10 +84,7 @@ pub async fn add_patient(
     Ok(patient_entity.outpatient_card_number)
 }
 
-pub async fn update_patient(
-    pool: &PgPool,
-    patient: Patient,
-) -> Result<(), sqlx::Error> {
+pub async fn update_patient(pool: &PgPool, patient: Patient) -> Result<(), sqlx::Error> {
     sqlx::query!(
         r#"
         UPDATE patient
@@ -109,23 +103,22 @@ pub async fn update_patient(
     Ok(())
 }
 
-pub async fn delete_patient(
-    pool: &PgPool,
-    outpatient_card_number: i32,
-) -> Result<(), sqlx::Error> {
+pub async fn delete_patient(pool: &PgPool, outpatient_card_number: i32) -> Result<(), sqlx::Error> {
     sqlx::query!(
         r#"
         DELETE FROM patient
         WHERE outpatient_card_number = $1
         "#,
         outpatient_card_number
-    ).execute(pool).await?;
+    )
+    .execute(pool)
+    .await?;
     Ok(())
 }
 
 pub async fn find_patients_by_full_name(
     pool: &PgPool,
-    full_name: &str
+    full_name: &str,
 ) -> Result<Vec<Patient>, sqlx::Error> {
     let patients_entitys = sqlx::query_as!(
         PatientEntity,
@@ -135,42 +128,56 @@ pub async fn find_patients_by_full_name(
         WHERE p.full_name LIKE $1
         "#,
         full_name
-    ).fetch_all(pool).await?;
+    )
+    .fetch_all(pool)
+    .await?;
     Ok(patients_entitys.into_iter().map(Patient::from).collect())
 }
 
-pub async fn get_patient_by_insurance_number(
+pub async fn get_patient_by_insurance_number_or_number_snils(
     pool: &PgPool,
-    insurance_number: &str,
+    insurance_number_or_number_snils: &str,
 ) -> Result<Patient, sqlx::Error> {
     let patient_entity = sqlx::query_as!(
         PatientEntity,
         r#"
         SELECT t.*
         FROM patient t
-        WHERE t.insurance_number = $1
+        WHERE t.insurance_number = $1 OR t.snils_number = $1
         "#,
-        insurance_number
+        insurance_number_or_number_snils
     )
     .fetch_one(pool)
     .await?;
     Ok(Patient::from(patient_entity))
 }
 
-pub async fn get_patient_by_snils_number(
+pub(crate) async fn try_register_patient(
     pool: &PgPool,
-    snils_number: &str,
-) -> Result<Patient, sqlx::Error> {
+    patient: Patient,
+) -> Result<Patient, String> {
     let patient_entity = sqlx::query_as!(
         PatientEntity,
         r#"
         SELECT t.*
         FROM patient t
-        WHERE t.snils_number = $1
+        WHERE t.insurance_number = $1 OR t.snils_number = $2
         "#,
-        snils_number
+        patient.insurance_number(),
+        patient.snils_number()
     )
-    .fetch_one(pool)
-    .await?;
-    Ok(Patient::from(patient_entity))
+    .fetch_optional(pool)
+    .await
+    .map_err(|e| e.to_string())?;
+    match patient_entity {
+        Some(_) => Err("Пациент с такими данными уже зарегистрирован".to_string()),
+        None => {
+            let outpatient_card_number = add_patient(pool, patient)
+                .await
+                .map_err(|e| e.to_string())?;
+            get_patient_by_outpatient_card_number(pool, outpatient_card_number)
+                .await
+                .map_err(|e| e.to_string())
+        }
+    }
 }

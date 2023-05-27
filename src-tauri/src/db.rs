@@ -1,9 +1,9 @@
 pub(crate) mod connection;
 //controllers
-mod patient_controller;
-mod doctor_controller;
-mod speciality_controller;
-mod diagnosis_controller;
-mod cabinet_controller;
-mod medication_controller;
-mod appointment_controller;
+pub(crate) mod patient_controller;
+pub(crate) mod doctor_controller;
+pub(crate) mod speciality_controller;
+pub(crate) mod diagnosis_controller;
+pub(crate) mod cabinet_controller;
+pub(crate) mod medication_controller;
+pub(crate) mod appointment_controller;
