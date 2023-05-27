@@ -527,7 +527,7 @@ const AdminPage = () => {
           type="number"
           value={(formData as Appointment).doctor_id || ''}
           name="doctor_id"
-          placeholder="Имя доктора"
+          placeholder="ID врача"
           onChange={handleInputChange}
         />
         <input
@@ -538,7 +538,7 @@ const AdminPage = () => {
           onChange={handleInputChange}
         />
         <input
-          type="text"
+          type='datetime-local'
           value={(formData as Appointment).appointment_time || ''}
           name="appointment_time"
           placeholder="Дата"
